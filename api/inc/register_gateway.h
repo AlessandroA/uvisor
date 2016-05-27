@@ -17,105 +17,155 @@
 #ifndef __UVISOR_API_REGISTER_GATEWAY_H__
 #define __UVISOR_API_REGISTER_GATEWAY_H__
 
+#include "api/inc/register_gateway_exports.h"
 #include "api/inc/uvisor_exports.h"
 #include <stdint.h>
 
-/* The following magic is used to verify that a register gateway structure. It
- * has been generated starting from the ARM Thumb/Thumb-2 invalid opcode.
- * ARM Thumb (w/o the Thumb-2 extension): 0xF7FxAxxx (32 bits)
- * The 'x's can be freely chosen (they have been chosen randomly here).
- * This requires the Thumb-2 extensions because otherwise only 16 bits opcodes
- * are accepted.*/
-#if defined(__thumb__) && defined(__thumb2__)
-#define UVISOR_REGISTER_GATEWAY_MAGIC 0xF7F3A89E
-#else
-#error "Unsupported instruction set. The ARM Thumb-2 instruction set must be supported."
-#endif /* __thumb__ && __thumb2__ */
+/* Register gateway metadata
+ * The metadata attached to the register gateway depends on the operation
+ * (simple read/write vs. masked read/write). */
 
-/* Register gateway operations */
-/* Note: Do not use special characters as these numbers will be stringified. */
-#define UVISOR_OP_READ(op)  (op)
-#define UVISOR_OP_WRITE(op) ((1 << 4) | (op))
-#define UVISOR_OP_NOP       0x0
-#define UVISOR_OP_AND       0x1
-#define UVISOR_OP_OR        0x2
-#define UVISOR_OP_XOR       0x3
-
-/* Default mask for whole register operatins. */
-#define __UVISOR_OP_DEFAULT_MASK 0x0
-
-/* Register gateway metadata */
 #if defined(__CC_ARM)
 
-/* TODO/FIXME */
+/* TODO */
 
 #elif defined(__GNUC__)
 
-/* 1 argument: Simple read, no mask */
-#define __UVISOR_REGISTER_GATEWAY_METADATA1(src_box, addr) \
-    "b.n skip_args%=\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
-    ".word " UVISOR_TO_STRING(addr) "\n" \
-    ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_OP_READ(UVISOR_OP_NOP)) "\n" \
-    ".word " UVISOR_TO_STRING(__UVISOR_OP_DEFAULT_MASK) "\n" \
-    "skip_args%=:\n"
+/* 0 arguments: Simple read, no mask */
+#define __UVISOR_REGISTER_GATEWAY_METADATA0() \
+    /* .value           = */ ".word 0\n" \
+    /* .operation       = */ ".word " UVISOR_TO_STRING(UVISOR_RGW_OP_READ) "\n" \
+    /* .mask            = */ ".word 0\n"
 
-/* 2 arguments: Simple write, no mask */
-#define __UVISOR_REGISTER_GATEWAY_METADATA2(src_box, addr, val) \
-    "b.n skip_args%=\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
-    ".word " UVISOR_TO_STRING(addr) "\n" \
-    ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_OP_WRITE(UVISOR_OP_NOP)) "\n" \
-    ".word " UVISOR_TO_STRING(__UVISOR_OP_DEFAULT_MASK) "\n" \
-    "skip_args%=:\n"
+/* 1 argument: Simple write, no mask */
+#define __UVISOR_REGISTER_GATEWAY_METADATA1(val) \
+    /* .value           = */ ".word " UVISOR_TO_STRING(val) "\n" \
+    /* .operation       = */ ".word " UVISOR_TO_STRING(UVISOR_RGW_OP_WRITE) "\n" \
+    /* .mask            = */ ".word 0\n"
 
-/* 3 arguments: Masked read */
-#define __UVISOR_REGISTER_GATEWAY_METADATA3(src_box, addr, op, mask) \
-    "b.n skip_args%=\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
-    ".word " UVISOR_TO_STRING(addr) "\n" \
-    ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_OP_READ(op)) "\n" \
-    ".word " UVISOR_TO_STRING(mask) "\n" \
-    "skip_args%=:\n"
+/* 2 arguments: Masked read */
+#define __UVISOR_REGISTER_GATEWAY_METADATA2(op, mask) \
+    /* .value           = */ ".word 0\n" \
+    /* .operation       = */ ".word " UVISOR_TO_STRING(op) "\n" \
+    /* .mask            = */ ".word " UVISOR_TO_STRING(mask) "\n"
 
-/* 4 arguments: Masked write */
-#define __UVISOR_REGISTER_GATEWAY_METADATA4(src_box, addr, val, op, mask) \
-    "b.n skip_args%=\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
-    ".word " UVISOR_TO_STRING(addr) "\n" \
-    ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
-    ".word " UVISOR_TO_STRING(UVISOR_OP_WRITE(op)) "\n" \
-    ".word " UVISOR_TO_STRING(mask) "\n" \
-    "skip_args%=:\n"
+/* 3 arguments: Masked write */
+#define __UVISOR_REGISTER_GATEWAY_METADATA3(val, op, mask) \
+    /* .value           = */ ".word " UVISOR_TO_STRING(val) "\n" \
+    /* .operation       = */ ".word " UVISOR_TO_STRING(op) "\n" \
+    /* .mask            = */ ".word " UVISOR_TO_STRING(mask) "\n"
 
-#endif /* __CC_ARM or __GNUC__ */
+#endif /* __CC_ARM || __GNUC__ */
 
-#define __UVISOR_REGISTER_GATEWAY_METADATA(src_box, ...) \
-     __UVISOR_MACRO_SELECT(_0, ##__VA_ARGS__, __UVISOR_REGISTER_GATEWAY_METADATA4, \
+/* Support macro used to overload the register gateway metadata based on the
+ * inputs - operation, value, metadata. */
+#define __UVISOR_REGISTER_GATEWAY_METADATA(...) \
+     __UVISOR_MACRO_SELECT(_0, ##__VA_ARGS__, /* No macro for 4 args */          , \
                                               __UVISOR_REGISTER_GATEWAY_METADATA3, \
                                               __UVISOR_REGISTER_GATEWAY_METADATA2, \
                                               __UVISOR_REGISTER_GATEWAY_METADATA1, \
-                                              /* No macro for 0 args */          )(src_box, ##__VA_ARGS__)
+                                              __UVISOR_REGISTER_GATEWAY_METADATA0)(__VA_ARGS__)
 
-/* Rregister-level gateway - Read */
-/* FIXME: Currently only a hardcoded 32bit constant can be used for the addr
- *        field. */
-#define uvisor_read(src_box, ...) \
+/** Register Gateway - Read operation
+ *
+ * This macro provides a variadic API to perform 32-bit read operations on
+ * restricted registers. Such accesses are assembled into a read-only flash
+ * structure that is read and validated by uVisor before performing the
+ * operation.
+ *
+ * The following APIs can be used:
+ * void uvisor_read(src_box, address);
+ * void uvisor_read(src_box, address, operation, mask);
+ *
+ * @warning These APIs currently only support hardcoded values, mask and
+ * operation. This means that an access of this type is supported:
+ * ```C
+ * // OK
+ * uvisor_write(&SYSCFG->CTRL, 0x1, UVISOR_RGW_OP_WRITE_AND, 0x1);
+ * ```
+ * While the following ones are not:
+ * ```C
+ * // Won't work
+ * uint32_t some_value = 1;
+ * uint32_t some_operation = UVISOR_RGW_OP_WRITE;
+ * uvisor_write(&SYSCFG->CTRL, some_value);
+ * uvisor_write(&SYSCFG->CTRL, 0x1, some_operation, 0x1);
+ * ```
+ *
+ * @param src_box[in]   The name of the source box as decalred in
+ *                      `UVISOR_BOX_CONFIG`.
+ * @param address[in]   The address for the data access.
+ * @param operation[in] The operation to perform at the address for the read. It
+ *                      is chosen among the `UVISOR_RGW_OP_*` macros.
+ * @param mask[in]      The mask to apply for the read operation.
+ * @returns The value read from address using the operation and mask provided
+ * (or their respective defaults if they have not been provided).
+ */
+#define uvisor_read(src_box, address, ...) \
     ({ \
-        uint32_t res = UVISOR_SVC(UVISOR_SVC_ID_REGISTER_GATEWAY, \
-                                  __UVISOR_REGISTER_GATEWAY_METADATA(src_box, ##__VA_ARGS__)); \
+        uint32_t res; \
+        asm volatile( \
+            "svc %[svc_id]\n" \
+            "b.n skip_args%=\n" \
+            "ldr.w r0, =%[addr]\n" \
+            ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
+            ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
+            __UVISOR_REGISTER_GATEWAY_METADATA(__VA_ARGS__) \
+            "skip_args%=:\n" \
+            :          "=r" (res) \
+            : [svc_id] "I"  ((UVISOR_SVC_ID_REGISTER_GATEWAY) & 0xFF), \
+              [addr]   "X"  ((uint32_t *) (address)) \
+        ); \
         res; \
     })
 
-/* Register-level gateway - Write */
-#define uvisor_write(src_box, addr, val, ...) \
+/** Register Gateway - Write operation
+ *
+ * This macro provides a variadic API to perform 32-bit write operations on
+ * restricted registers. Such accesses are assembled into a read-only flash
+ * structure that is read and validated by uVisor before performing the
+ * operation.
+ *
+ * The following APIs can be used:
+ * void uvisor_write(src_box, address, value);
+ * void uvisor_write(src_box, address, value, operation, mask);
+ *
+ * @warning These APIs currently only support hardcoded values, mask and
+ * operation. This means that an access of this type is supported:
+ * ```C
+ * // OK
+ * uvisor_write(&SYSCFG->CTRL, 0x1, UVISOR_RGW_OP_WRITE_AND, 0x1);
+ * ```
+ * While the following ones are not:
+ * ```C
+ * // Won't work
+ * uint32_t some_value = 1;
+ * uint32_t some_operation = UVISOR_RGW_OP_WRITE;
+ * uvisor_write(&SYSCFG->CTRL, some_value);
+ * uvisor_write(&SYSCFG->CTRL, 0x1, some_operation, 0x1);
+ * ```
+ *
+ * @param src_box[in]   The name of the source box as decalred in
+ *                      `UVISOR_BOX_CONFIG`.
+ * @param address[in]   The address for the data access.
+ * @param value[in]     The value to write at address.
+ * @param operation[in] The operation to perform at the address for the read. It
+ *                      is chosen among the `UVISOR_RGW_OP_*` macros.
+ * @param mask[in]      The mask to apply for the write operation.
+ */
+#define uvisor_write(src_box, address, value, ...) \
     ({ \
-        UVISOR_SVC(UVISOR_SVC_ID_REGISTER_GATEWAY, \
-                   __UVISOR_REGISTER_GATEWAY_METADATA(src_box, addr, val, ##__VA_ARGS__), \
-                   val); \
+        asm volatile( \
+            "svc %[svc_id]\n" \
+            "b.n skip_args%=\n" \
+            "ldr.w r0, =%[addr]\n" \
+            ".word " UVISOR_TO_STRING(UVISOR_REGISTER_GATEWAY_MAGIC) "\n" \
+            ".word " UVISOR_TO_STRING(src_box) "_cfg_ptr\n" \
+            __UVISOR_REGISTER_GATEWAY_METADATA(value, ##__VA_ARGS__) \
+            "skip_args%=:\n" \
+            :: [svc_id] "I" ((UVISOR_SVC_ID_REGISTER_GATEWAY) & 0xFF), \
+               [addr]   "X" ((uint32_t *) (address)) \
+        ); \
     })
 
 #endif /* __UVISOR_API_REGISTER_GATEWAY_H__ */
