@@ -265,11 +265,6 @@ static void vmpu_load_boxes(void)
     DPRINTF("vmpu_load_boxes [DONE]\n");
 }
 
-uint32_t vmpu_register_gateway(uint32_t addr, uint32_t val)
-{
-    return 0;
-}
-
 int vmpu_fault_recovery_bus(uint32_t pc, uint32_t sp, uint32_t fault_addr, uint32_t fault_status)
 {
     uint16_t opcode;
@@ -486,4 +481,10 @@ int vmpu_box_namespace_from_id(int box_id, char *box_namespace, size_t length)
     }
 
     return copy_box_namespace(box_cfgtbl[box_id]->box_namespace, box_namespace);
+}
+
+/* TODO */
+void vmpu_register_gateway_check(uint32_t * address, uint32_t operation, uint32_t mask)
+{
+    return;
 }
