@@ -31,14 +31,4 @@ typedef struct {
     void (*priv_systick)(void);
 } UvisorPrivSystemIRQHooks;
 
-/* Use this macro to register privileged system IRQ hooks. If you don't want to
- * register a particular privileged system IRQ hook, you can supply NULL for
- * that hook parameter. */
-#define UVISOR_SET_PRIV_SYS_IRQ_HOOKS(priv_svc_0_, priv_pendsv_, priv_systick_) \
-    UVISOR_EXTERN const UvisorPrivSystemIRQHooks __uvisor_priv_sys_irq_hooks = { \
-        .priv_svc_0 = priv_svc_0_, \
-        .priv_pendsv = priv_pendsv_, \
-        .priv_systick = priv_systick_, \
-    };
-
 #endif

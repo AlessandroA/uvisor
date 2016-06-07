@@ -21,105 +21,186 @@
 #include <stddef.h>
 #include <stdint.h>
 
-UVISOR_EXTERN const uint32_t __uvisor_mode;
+/** uVisor modes of operation. */
+#define UVISOR_DISABLED   0 /**< The uVisor binary is stll embedded in the application but it is left disabled. */
+#define UVISOR_PERMISSIVE 1 /**< The uVisor runs as normal but instead of blocking denied accesses it logs them. */
+#define UVISOR_ENABLED    2 /**< The uVisor runs normally, blocking any attempt of denied access. */
 
-#define UVISOR_DISABLED   0
-#define UVISOR_PERMISSIVE 1
-#define UVISOR_ENABLED    2
+/** Configure the uVisor mode of operation.
+ * @param uvisor_mode[in]   uVisor mode of operation, chosen among
+ *                          \ref UVISOR_ENABLED, \ref UVISOR_DISABLED, and
+ *                          \ref UVISOR_PERMISSIVE
+ */
+#define UVISOR_CONFIG_MODE(uvisor_mode) \
+    UVISOR_EXTERN uint32_t const __uvisor_mode = (uvisor_mode);
 
-#define UVISOR_SET_MODE(mode) \
-    UVISOR_SET_MODE_ACL_COUNT(mode, NULL, 0)
 
-#define UVISOR_SET_MODE_ACL(mode, acl_list) \
-    UVISOR_SET_MODE_ACL_COUNT(mode, acl_list, UVISOR_ARRAY_COUNT(acl_list))
+/** Type of the uVisor boxes index.
+ * Each box has an internal index that keeps information on the box heap, stack
+ * and context. This index is represented by \ref UvisorBoxIndex but an
+ * operating system can extend it by embedding \ref UvisorBoxIndex into a custom
+ * structure. If the OS does not specify an index type, the default \ref
+ * UvisorBoxIndex is used.
+ */
+#ifndef UVISOR_CONFIG_INDEX_TYPE
+#define UVISOR_CONFIG_INDEX_TYPE UvisorBoxIndex
+#endif
 
-#define UVISOR_SET_MODE_ACL_COUNT(mode, acl_list, acl_list_count) \
-    uint8_t __attribute__((section(".keep.uvisor.bss.boxes"), aligned(32))) __reserved_stack[UVISOR_STACK_BAND_SIZE]; \
+/** Register your custom handlers for the system ISRs.
+ * This macro tells uVisor to use the provided handlers to serve SVCall, PendSV
+ * and SysTick exceptions, which are all system interrupts. The registered
+ * handlers will run in exception mode (privileged).
+ * @note SVCalls are not served directly by uVisor. Instead, they are
+ * multiplexed by an ISR, and only if the SVCall ID is 0.
+ * @param priv_svc_0_[in]   ISR for an SVCall exception. Use `NULL` if not
+ *                          needed
+ * @param priv_pendsv_[in]  ISR for a PendSV exception. Use `NULL` if not
+ *                          needed
+ * @param priv_systick_[in] ISR for a SysTick exception. Use `NULL` if not
+ *                          needed
+ */
+#define UVISOR_CONFIG_SYSTEM_ISRS(priv_svc_0_, priv_pendsv_, priv_systick_) \
+    UVISOR_EXTERN const UvisorPrivSystemIRQHooks __uvisor_priv_sys_irq_hooks = { \
+        .priv_svc_0 = priv_svc_0_, \
+        .priv_pendsv = priv_pendsv_, \
+        .priv_systick = priv_systick_, \
+    };
+
+/** Configure the memories for a secure box.
+ * @warning This configuration only applies to secure boxes. It is ignored for
+ * box 0.
+ * @warning This configuration requires the symbol \ref UVISOR_CONFIG_INDEX_TYPE
+ * to be defined.
+ * @param stack_size[in]    The required stack size for the secure box
+ * @param heap_size[in]     The required heap size for the secure box
+ * @param context_type[in]  The type of the custom box-specific context that
+ *                          will be protected by uVisor. Optional
+ */
+#define UVISOR_CONFIG_BOX_MEMORIES(stack_size, heap_size, ...) \
+    UVISOR_MACRO_SELECT_0_TO_1(UVISOR_CONFIG_BOX_MEMORIES2, UVISOR_CONFIG_BOX_MEMORIES3, ##__VA_ARGS__)(stack_size, \
+                                                                                                        heap_size, \
+                                                                                                        ##__VA_ARGS__)
+
+/** Implementation for \ref UVISOR_CONFIG_MEMORIES when called with 2 arguments.
+ * @internal
+ * Just call the full API with `context_size` set to 0.
+ */
+#define UVISOR_CONFIG_BOX_MEMORIES2(stack_size, heap_size) \
+    __UVISOR_CONFIG_BOX_MEMORIES(stack_size, heap_size, 0)
+
+/* Implementation for \ref UVISOR_CONFIG_MEMORIES when called with 3 arguments.
+ * @internal
+ * First call the full API with context_size set to `sizeof(context_type)`, then
+ * declare `__uvisor_ps` using `context_type`.
+ */
+#define UVISOR_CONFIG_BOX_MEMORIES3(stack_size, heap_size, context_type) \
+    __UVISOR_CONFIG_BOX_MEMORIES(stack_size, heap_size, sizeof(context_type)) \
     \
-    UVISOR_EXTERN const uint32_t __uvisor_mode = (mode); \
-    \
-    static const __attribute__((section(".keep.uvisor.cfgtbl"), aligned(4))) UvisorBoxConfig main_cfg = { \
-        UVISOR_BOX_MAGIC, \
-        UVISOR_BOX_VERSION, \
-        0, \
-        sizeof(RtxBoxIndex), \
-        0, \
-        0, \
-        NULL, \
-        acl_list, \
-        acl_list_count \
-    }; \
-    \
-    extern const __attribute__((section(".keep.uvisor.cfgtbl_ptr_first"), aligned(4))) void * const main_cfg_ptr = &main_cfg;
+    /* __uvisor_ps points to the type of the context.
+     * In this way, the user can access the context structure with a single
+     * de-reference. */ \
+    UVISOR_EXTERN context_type * const * const __uvisor_ps;
 
-/* this macro selects an overloaded macro (variable number of arguments) */
-#define __UVISOR_BOX_MACRO(_1, _2, _3, _4, NAME, ...) NAME
-
-#define __UVISOR_BOX_CONFIG(box_name, acl_list, acl_list_count, stack_size, context_size) \
+/** The actual API implementation for \ref UVISOR_CONFIG_MEMORIES.
+ * @internal
+ */
+#define __UVISOR_CONFIG_BOX_MEMORIES(stack_size, heap_size, context_size) \
+    /* Save the settings for when we assemble the box configuration table. */ \
+    static uint32_t const __uvisor_box_stack_size = UVISOR_MIN_STACK(stack_size); \
+    static uint32_t const __uvisor_box_heap_size = (heap_size); \
+    static uint32_t const __uvisor_box_context_size = context_size; \
+    static uint32_t const __uvisor_box_index_size = sizeof(UVISOR_CONFIG_INDEX_TYPE); \
     \
-    uint8_t __attribute__((section(".keep.uvisor.bss.boxes"), aligned(32))) \
-        box_name ## _reserved[ \
+    /* Pre-allocate enough memory to hold all BSS components.
+     * The sum of all components (stack, heap, context, index) is rounded and
+     * scaled to meet the MPU configuration requirements. */ \
+    uint8_t __attribute__((section(".keep.uvisor.bss.boxes"), aligned(32))) box_name ## _reserved[ \
             UVISOR_STACK_SIZE_ROUND( \
                 ( \
-                    (UVISOR_MIN_STACK(stack_size) + \
-                    (context_size) + \
-                    (__uvisor_box_heapsize) + \
-                    sizeof(RtxBoxIndex) \
-                ) \
-            * 8) \
-        / 6)]; \
+                    ( \
+                        UVISOR_MIN_STACK(stack_size) + \
+                        (heap_size) + \
+                        sizeof(UVISOR_CONFIG_INDEX_TYPE) + \
+                        (context_size) \
+                    ) * 8 \
+                ) / 6 \
+            ) \
+        ]; \
+
+/** Configure the namespace for a secure box.
+ * @warning This configuration only applies to secure boxes. It is ignored for
+ * box 0.
+ * @param box_namespace[in]     Pointer to the box namespace string. Use `NULL`
+ *                              if none is required
+ */
+#define UVISOR_CONFIG_BOX_NAMESPACE(box_namespace) \
+    /* Save the settings for when we assemble the box configuration table. */ \
+    static char const * const __uvisor_box_namespace = (box_namespace);
+
+/** Configure the ACLs for a box.
+ * This macro can be used for both the main box and the secure boxes.
+ * @param acl_list[in]  An array of `UvisorBoxAclItem`s
+ */
+#define UVISOR_CONFIG_BOX_ACL(acl_list) \
+    /* Save the settings for when we assemble the box configuration table. */ \
+    static UvisorBoxAclItem const * const __uvisor_box_acl_list = (acl_list); \
+    static uint32_t const __uvisor_box_acl_count = UVISOR_ARRAY_COUNT(acl_list); \
+
+/** Configure box 0.
+ * @warning Only call this macro after having called the compulsory \ref
+ * UVISOR_CONFIG_BOX_ACL function.
+ * @warning This macro can only be called once.
+ */
+#define UVISOR_CONFIG_BOX_0() \
+    /* Pre-allocate enough memory to hold a single stack guard band.
+     * This is not needed by box 0 but is always allocoated before any other
+     * secure box memory, so it must be taken into account. */ \
+    uint8_t __attribute__((section(".keep.uvisor.bss.boxes"), aligned(32))) __reserved_stack[UVISOR_STACK_BAND_SIZE]; \
     \
-    static const __attribute__((section(".keep.uvisor.cfgtbl"), aligned(4))) UvisorBoxConfig box_name ## _cfg = { \
-        UVISOR_BOX_MAGIC, \
-        UVISOR_BOX_VERSION, \
-        UVISOR_MIN_STACK(stack_size), \
-        sizeof(RtxBoxIndex), \
-        context_size, \
-        __uvisor_box_heapsize, \
-        __uvisor_box_namespace, \
-        acl_list, \
-        acl_list_count \
+    /* Assemble the configuration table for box 0. */ \
+    static __attribute__((section(".keep.uvisor.cfgtbl"), aligned(4))) UvisorBoxConfig const box0_cfg = { \
+        /* .magic        = */ UVISOR_BOX_MAGIC, \
+        /* .version      = */ UVISOR_BOX_VERSION, \
+        /* .stack_size   = */ 0, \
+        /* .index_size   = */ sizeof(UVISOR_CONFIG_INDEX_TYPE), \
+        /* .context_size = */ 0, \
+        /* .heap_size    = */ 0, \
+        /* .namespace    = */ NULL, \
+        /* .acl_list     = */ __uvisor_box_acl_list, \
+        /* .acl_count    = */ __uvisor_box_acl_count \
     }; \
     \
-    extern const __attribute__((section(".keep.uvisor.cfgtbl_ptr"), aligned(4))) void * const box_name ## _cfg_ptr = &box_name ## _cfg;
+    /* Store the pointer to the configuration table. */ \
+    UVISOR_EXTERN __attribute__((section(".keep.uvisor.cfgtbl_ptr_first"), aligned(4))) \
+    void const * const box0_cfg_ptr = &box0_cfg;
 
-#define __UVISOR_BOX_CONFIG_NOCONTEXT(box_name, acl_list, stack_size) \
-    __UVISOR_BOX_CONFIG(box_name, acl_list, UVISOR_ARRAY_COUNT(acl_list), stack_size, 0) \
-
-#define __UVISOR_BOX_CONFIG_CONTEXT(box_name, acl_list, stack_size, context_type) \
-    __UVISOR_BOX_CONFIG(box_name, acl_list, UVISOR_ARRAY_COUNT(acl_list), stack_size, sizeof(context_type)) \
-    UVISOR_EXTERN context_type *const *const __uvisor_ps;
-
-#define __UVISOR_BOX_CONFIG_NOACL(box_name, stack_size, context_type) \
-    __UVISOR_BOX_CONFIG(box_name, NULL, 0, stack_size, sizeof(context_type)) \
-    UVISOR_EXTERN context_type *const *const __uvisor_ps;
-
-#define __UVISOR_BOX_CONFIG_NOACL_NOCONTEXT(box_name, stack_size) \
-    __UVISOR_BOX_CONFIG(box_name, NULL, 0, stack_size, 0)
-
-#define UVISOR_BOX_CONFIG_ACL(...) \
-    __UVISOR_BOX_MACRO(__VA_ARGS__, __UVISOR_BOX_CONFIG_CONTEXT, \
-                                    __UVISOR_BOX_CONFIG_NOCONTEXT, \
-                                    __UVISOR_BOX_CONFIG_NOACL_NOCONTEXT)(__VA_ARGS__)
-
-#define UVISOR_BOX_CONFIG_CTX(...) \
-    __UVISOR_BOX_MACRO(__VA_ARGS__, __UVISOR_BOX_CONFIG_CONTEXT, \
-                                    __UVISOR_BOX_CONFIG_NOACL, \
-                                    __UVISOR_BOX_CONFIG_NOACL_NOCONTEXT)(__VA_ARGS__)
-
-#define UVISOR_BOX_CONFIG(...) \
-    UVISOR_BOX_CONFIG_ACL(__VA_ARGS__)
-
-/* Use this macro before box defintion (for example, UVISOR_BOX_CONFIG) to
- * define the name of your box. If you don't want a name, use this macro with
- * box_namespace as NULL. */
-#define UVISOR_BOX_NAMESPACE(box_namespace) \
-    static const char *const __uvisor_box_namespace = box_namespace
-
-#define UVISOR_BOX_HEAPSIZE(heap_size) \
-    static const uint32_t __uvisor_box_heapsize = heap_size;
+/** Configure a secure box.
+ * @warning Only call this macro after having called the compulsory \ref
+ * UVISOR_CONFIG_BOX_ACL, \ref UVISOR_CONFIG_BOX_MEMORIES, and \ref
+ * UVISOR_CONFIG_BOX_NAMESPACE functions.
+ * @warning This macro can only be called once for each secure box.
+ */
+#define UVISOR_CONFIG_BOX_SECURE(box_name) \
+    /* Assemble the configuration table for box 0. */ \
+    static __attribute__((section(".keep.uvisor.cfgtbl"), aligned(4))) UvisorBoxConfig const box_name ## _cfg = { \
+        /* .magic        = */ UVISOR_BOX_MAGIC, \
+        /* .version      = */ UVISOR_BOX_VERSION, \
+        /* .stack_size   = */ __uvisor_box_stack_size, \
+        /* .index_size   = */ __uvisor_box_index_size, \
+        /* .context_size = */ __uvisor_box_context_size, \
+        /* .heap_size    = */ __uvisor_box_heap_size, \
+        /* .namespace    = */ __uvisor_box_namespace, \
+        /* .acl_list     = */ __uvisor_box_acl_list, \
+        /* .acl_count    = */ __uvisor_box_acl_count \
+    }; \
+    \
+    /* Store the pointer to the configuration table. */ \
+    UVISOR_EXTERN __attribute__((section(".keep.uvisor.cfgtbl_ptr"), aligned(4))) \
+    void const * const box_name ## _cfg_ptr = &box_name ## _cfg;
 
 #define uvisor_ctx (*__uvisor_ps)
+
+UVISOR_EXTERN const uint32_t __uvisor_mode;
 
 /* Return the numeric box ID of the current box. */
 UVISOR_EXTERN int uvisor_box_id_self(void);

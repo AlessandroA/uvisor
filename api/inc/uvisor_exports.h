@@ -61,6 +61,10 @@
 /* select an overloaded macro, so that 0 to 4 arguments can be used */
 #define __UVISOR_MACRO_SELECT(_0, _1, _2, _3, _4, NAME, ...) NAME
 
+/** Select 0 to 1 variable arguments from a macro. */
+#define UVISOR_MACRO_SELECT_0_TO_1(case0, case1, ...) \
+    __UVISOR_MACRO_SELECT(_0, ##__VA_ARGS__, /* 4 */, /* 3 */, /* 2 */, case1, case0)
+
 /* count macro arguments */
 #define UVISOR_MACRO_NARGS(...) \
      __UVISOR_MACRO_SELECT(_0, ##__VA_ARGS__, 4, 3, 2, 1, 0)
