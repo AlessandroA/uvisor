@@ -4,7 +4,7 @@ The uVisor is a self-contained software hypervisor that creates independent secu
 
 ## Overview
 
-To start using uVisor you will need to include it as a library in your design. We release the uVisor library periodically in the form of a yotta module in the [ARMmbed/uvisor-lib](https://github.com/ARMmbed/uvisor-lib) repository.
+To start using uVisor you will need to include it as a library in your design. If you are using mbed OS, uVisor is already part of the OS code-base but is not linked in with your final application unless you explicitly say so. For more information, checkout the document "[uVisor in mbed OS](docs/MBED_OS.md)".
 
 If you want to learn more about the uVisor security model and get an overview of its features this is the right place. In this document you will read about:
 
@@ -16,14 +16,14 @@ If you want to learn more about the uVisor security model and get an overview of
 
 Other documents you might be interested in:
 
-| I want to...                               | Document                                                                                      |
-|--------------------------------------------|-----------------------------------------------------------------------------------------------|
-| Start using uVisor on a supported platform | [`uvisor-lib` quick-start guide](https://github.com/ARmmbed/uvisor-lib/blob/master/README.md) |
-| Know everything I can do with uVisor       | [API documentation](https://github.com/ARmmbed/uvisor-lib/blob/master/DOCUMENTATION.md)       |
-| Enable debug messages                      | [Debugging uVisor](docs/DEBUGGING.md)                                                         |
-| Port uVisor to my platform                 | [Porting guide](docs/PORTING.md)                                                              |
-| Test and experiment with uVisor            | [Developing with uVisor locally](docs/DEVELOPING_LOCALLY.md)                                  |
-| Contribute to uVisor                       | [Contributing to uVisor](CONTRIBUTING.md)                                                     |
+| I want to...                               | Document                                                     |
+|--------------------------------------------|--------------------------------------------------------------|
+| See how to setup and use uVisor in my app  | [uVisor quick-start guide](docs/QUICKSTART.md)               |
+| Know everything I can do with uVisor       | [API documentation](docs/API.md)                             |
+| Enable debug messages                      | [Debugging uVisor](docs/DEBUGGING.md)                        |
+| Port uVisor to my platform                 | [Porting guide](docs/PORTING.md)                             |
+| Test and experiment with uVisor            | [Developing with uVisor locally](docs/DEVELOPING_LOCALLY.md) |
+| Contribute to uVisor                       | [Contributing to uVisor](CONTRIBUTING.md)                    |
 
 ### Word of caution
 
@@ -88,7 +88,7 @@ All the code that is not explicitly part of the uVisor is generally referred to 
 
 The unprivileged code can be made of mutually untrusted isolated modules (or boxes). This way, even if all are running with unprivileged permissions, different modules can protect their own secrets and execute critical code securely.
 
-For more details on how to setup a secure box and protect memories and peripherals, please read the [`uvisor-lib` quick-start guide](https://github.com/ARMmbed/uvisor-lib/blob/master/README.md).
+For more details on how to setup a secure box and protect memories and peripherals, please read the [uVisor quick-start guide](docs/QUICKSTART.md).
 
 ### Memory layout
 
@@ -120,7 +120,7 @@ The main memory sections that the uVisor protects are detailed in the following 
     </tr>
     <tr>
       <td>Secure boxes data / BSS / stack</td>
-      <td>Through a configuration process, unprivileged code can set up a secure box for which data and stack can be secured by the uVisor and placed in isolated and protected memory areas.
+      <td>Through a configuration process, unprivileged code can set up a secure box for which zero-initializeddata and stack can be secured by the uVisor and placed in protected memory areas.
       </td>
     </tr>
     <tr>
@@ -131,7 +131,7 @@ The main memory sections that the uVisor protects are detailed in the following 
   </tbody>
 </table>
 
-If you want to know how to use the uVisor APIs to setup a secure box please refer to the [`uvisor-lib` quick-start guide](https://github.com/ARMmbed/uvisor-lib/blob/master/README.md) and to the full [API documentation](https://github.com/ARMmbed/uvisor-lib/blob/master/DOCUMENTATION.md).
+If you want to know how to use the uVisor APIs to setup a secure box please refer to the [uVisor quick-start guide](docs/QUICKSTART.md) and to the full [API documentation](docs/API.md).
 
 ### The boot process
 
@@ -162,6 +162,4 @@ During a context switch, the uVisor stores the state of the previous context and
 * It re-configures the MPU and the peripherals protection.
 * It hands the execution to the target context.
 
-A context switch might be triggered automatically every time an interrupt belonging to a different box is served while another context is active. Context switches can also be manually triggered by using a so-called *secure gateway*.
-
-For more details on how to use the secure gateway please read the [`uvisor-lib` quick-start guide](https://github.com/ARMmbed/uvisor-lib/blob/master/README.md).
+A context switch might be triggered automatically every time an interrupt belonging to a different box is served while another context is active.
