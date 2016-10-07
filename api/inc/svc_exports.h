@@ -89,40 +89,40 @@
                                                          UVISOR_SVC_FAST_NARGS_SET(nargs)))
 
 /* SVC immediate values for custom table */
-#define UVISOR_SVC_ID_ISR_SET               UVISOR_SVC_CUSTOM_TABLE(1)
-#define UVISOR_SVC_ID_ISR_GET               UVISOR_SVC_CUSTOM_TABLE(2)
-#define UVISOR_SVC_ID_IRQ_ENABLE            UVISOR_SVC_CUSTOM_TABLE(3)
-#define UVISOR_SVC_ID_IRQ_DISABLE           UVISOR_SVC_CUSTOM_TABLE(4)
-#define UVISOR_SVC_ID_IRQ_PEND_CLR          UVISOR_SVC_CUSTOM_TABLE(5)
-#define UVISOR_SVC_ID_IRQ_PEND_SET          UVISOR_SVC_CUSTOM_TABLE(6)
-#define UVISOR_SVC_ID_IRQ_PEND_GET          UVISOR_SVC_CUSTOM_TABLE(7)
-#define UVISOR_SVC_ID_IRQ_PRIO_SET          UVISOR_SVC_CUSTOM_TABLE(8)
-#define UVISOR_SVC_ID_IRQ_PRIO_GET          UVISOR_SVC_CUSTOM_TABLE(9)
-#define UVISOR_SVC_ID_BENCHMARK_CFG         UVISOR_SVC_CUSTOM_TABLE(10)
-#define UVISOR_SVC_ID_BENCHMARK_RST         UVISOR_SVC_CUSTOM_TABLE(11)
-#define UVISOR_SVC_ID_BENCHMARK_STOP        UVISOR_SVC_CUSTOM_TABLE(12)
-#define UVISOR_SVC_ID_HALT_USER_ERR         UVISOR_SVC_CUSTOM_TABLE(13)
-#define UVISOR_SVC_ID_IRQ_LEVEL_GET         UVISOR_SVC_CUSTOM_TABLE(14)
-#define UVISOR_SVC_ID_BOX_ID_SELF           UVISOR_SVC_CUSTOM_TABLE(15)
-#define UVISOR_SVC_ID_BOX_ID_CALLER         UVISOR_SVC_CUSTOM_TABLE(16)
-#define UVISOR_SVC_ID_BOX_NAMESPACE_FROM_ID UVISOR_SVC_CUSTOM_TABLE(17)
-#define UVISOR_SVC_ID_DEBUG_REBOOT          UVISOR_SVC_CUSTOM_TABLE(18)
-#define UVISOR_SVC_ID_DEBUG_REGISTER_BOX    UVISOR_SVC_CUSTOM_TABLE(19)
-#define UVISOR_SVC_ID_IRQ_DISABLE_ALL       UVISOR_SVC_CUSTOM_TABLE(20)
-#define UVISOR_SVC_ID_IRQ_ENABLE_ALL        UVISOR_SVC_CUSTOM_TABLE(21)
-#define UVISOR_SVC_ID_PAGE_MALLOC           UVISOR_SVC_CUSTOM_TABLE(22)
-#define UVISOR_SVC_ID_PAGE_FREE             UVISOR_SVC_CUSTOM_TABLE(23)
+#define UVISOR_SVC_vIRQ_SetVector             UVISOR_SVC_CUSTOM_TABLE(1)
+#define UVISOR_SVC_vIRQ_GetVector             UVISOR_SVC_CUSTOM_TABLE(2)
+#define UVISOR_SVC_vIRQ_EnableIRQ             UVISOR_SVC_CUSTOM_TABLE(3)
+#define UVISOR_SVC_vIRQ_DisableIRQ            UVISOR_SVC_CUSTOM_TABLE(4)
+#define UVISOR_SVC_vIRQ_ClearPendingIRQ       UVISOR_SVC_CUSTOM_TABLE(5)
+#define UVISOR_SVC_vIRQ_SetPendingIRQ         UVISOR_SVC_CUSTOM_TABLE(6)
+#define UVISOR_SVC_vIRQ_GetPendingIRQ         UVISOR_SVC_CUSTOM_TABLE(7)
+#define UVISOR_SVC_vIRQ_SetPriority           UVISOR_SVC_CUSTOM_TABLE(8)
+#define UVISOR_SVC_vIRQ_GetPriority           UVISOR_SVC_CUSTOM_TABLE(9)
+#define UVISOR_SVC_uvisor_benchmark_configure UVISOR_SVC_CUSTOM_TABLE(10)
+#define UVISOR_SVC_uvisor_benchmark_start     UVISOR_SVC_CUSTOM_TABLE(11)
+#define UVISOR_SVC_uvisor_benchmark_stop      UVISOR_SVC_CUSTOM_TABLE(12)
+#define UVISOR_SVC_uvisor_error               UVISOR_SVC_CUSTOM_TABLE(13)
+#define UVISOR_SVC_vIRQ_GetLevel              UVISOR_SVC_CUSTOM_TABLE(14)
+#define UVISOR_SVC_box_id_self                UVISOR_SVC_CUSTOM_TABLE(15)
+#define UVISOR_SVC_box_id_caller              UVISOR_SVC_CUSTOM_TABLE(16)
+#define UVISOR_SVC_uvisor_box_namespace       UVISOR_SVC_CUSTOM_TABLE(17)
+#define UVISOR_SVC_debug_die                  UVISOR_SVC_CUSTOM_TABLE(18)
+#define UVISOR_SVC_uvisor_debug_init          UVISOR_SVC_CUSTOM_TABLE(19)
+#define UVISOR_SVC_vIRQ_DisableAll            UVISOR_SVC_CUSTOM_TABLE(20)
+#define UVISOR_SVC_vIRQ_EnableAll             UVISOR_SVC_CUSTOM_TABLE(21)
+#define UVISOR_SVC_uvisor_page_malloc         UVISOR_SVC_CUSTOM_TABLE(22)
+#define UVISOR_SVC_uvisor_page_free           UVISOR_SVC_CUSTOM_TABLE(23)
 
 /* SVC immediate values for hardcoded table (call from unprivileged) */
-#define UVISOR_SVC_ID_UNVIC_OUT           UVISOR_SVC_FIXED_TABLE(0, 0)
+#define UVISOR_SVC_unvic_gateway_out      UVISOR_SVC_FIXED_TABLE(0, 0)
 /* Deprecated: UVISOR_SVC_ID_CX_IN(nargs) UVISOR_SVC_FIXED_TABLE(1, nargs) */
 /* Deprecated: UVISOR_SVC_ID_CX_OUT       UVISOR_SVC_FIXED_TABLE(2, 0) */
-#define UVISOR_SVC_ID_REGISTER_GATEWAY    UVISOR_SVC_FIXED_TABLE(3, 0)
-#define UVISOR_SVC_ID_BOX_INIT_FIRST      UVISOR_SVC_FIXED_TABLE(4, 0)
-#define UVISOR_SVC_ID_BOX_INIT_NEXT       UVISOR_SVC_FIXED_TABLE(5, 0)
+#define UVISOR_SVC_REGISTER_GATEWAY       UVISOR_SVC_FIXED_TABLE(3, 0)
+#define UVISOR_SVC_boxes_init             UVISOR_SVC_FIXED_TABLE(4, 0)
+#define UVISOR_SVC_box_init_thunk         UVISOR_SVC_FIXED_TABLE(5, 0)
 
 /* SVC immediate values for hardcoded table (call from privileged) */
-#define UVISOR_SVC_ID_UNVIC_IN         UVISOR_SVC_FIXED_TABLE(0, 0)
+#define UVISOR_SVC_unvic_gateway_in       UVISOR_SVC_FIXED_TABLE(0, 0)
 
 /** Generate the SVCall opcode from the SVC ID. */
 #define UVISOR_SVC_OPCODE(id) ((uint16_t) 0xDF00 | (uint8_t) ((id) & 0xFF))
@@ -134,9 +134,9 @@
 
 #elif defined(__GNUC__)
 
-#define UVISOR_SVC(id, ...) UVISOR_SVC_METADATA(id, "", ##__VA_ARGS__)
+#define UVISOR_SVC(function_name, ...) UVISOR_SVC_METADATA(function_name, "", ##__VA_ARGS__)
 
-#define UVISOR_SVC_METADATA(id, metadata, ...) \
+#define UVISOR_SVC_METADATA(function_name, metadata, ...) \
     ({ \
         UVISOR_MACRO_REGS_ARGS(uint32_t, ##__VA_ARGS__); \
         UVISOR_MACRO_REGS_RETVAL(uint32_t, res); \
@@ -145,17 +145,17 @@
             metadata \
             : UVISOR_MACRO_GCC_ASM_OUTPUT(res) \
             : UVISOR_MACRO_GCC_ASM_INPUT(__VA_ARGS__), \
-              [svc_id] "I" ((id) & 0xFF) \
+              [svc_id] "I" ((UVISOR_SVC_ ## function_name) & 0xFF) \
         ); \
         res; \
     })
 
-#define UVISOR_FUNCTION_CALL(dst_fn, ...) \
+#define UVISOR_FUNCTION_CALL(function_name, ...) \
     ({ \
         UVISOR_MACRO_REGS_ARGS(uint32_t, ##__VA_ARGS__); \
         UVISOR_MACRO_REGS_RETVAL(uint32_t, res); \
         asm volatile( \
-            "bl " UVISOR_TO_STRING(dst_fn) "\n" \
+            "bl " UVISOR_TO_STRING(function_name) "\n" \
             : UVISOR_MACRO_GCC_ASM_OUTPUT(res) \
             : UVISOR_MACRO_GCC_ASM_INPUT(__VA_ARGS__) \
         ); \
