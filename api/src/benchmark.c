@@ -26,17 +26,17 @@ void uvisor_benchmark_configure(void)
      *     measurement itself
      *   - pass the computed overhead to the configuration routine to complete
      *     the calibration */
-    UVISOR_SVC(UVISOR_SVC_ID_BENCHMARK_CFG, 0);
+    UVISOR_SVC(uvisor_benchmark_configure, 0);
     uvisor_benchmark_start();
-    UVISOR_SVC(UVISOR_SVC_ID_BENCHMARK_CFG, uvisor_benchmark_stop());
+    UVISOR_SVC(uvisor_benchmark_configure, uvisor_benchmark_stop());
 }
 
 void uvisor_benchmark_start(void)
 {
-    UVISOR_SVC(UVISOR_SVC_ID_BENCHMARK_RST);
+    UVISOR_SVC(uvisor_benchmark_start);
 }
 
 uint32_t uvisor_benchmark_stop(void)
 {
-    return UVISOR_SVC(UVISOR_SVC_ID_BENCHMARK_STOP);
+    return UVISOR_SVC(uvisor_benchmark_stop);
 }

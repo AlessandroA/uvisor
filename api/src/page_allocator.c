@@ -20,12 +20,12 @@
 
 int uvisor_page_malloc(UvisorPageTable * const table)
 {
-    return UVISOR_SVC(UVISOR_SVC_ID_PAGE_MALLOC, table);
+    return UVISOR_SVC(uvisor_page_malloc, table);
 }
 
 int uvisor_page_free(const UvisorPageTable * const table)
 {
-    return UVISOR_SVC(UVISOR_SVC_ID_PAGE_FREE, table);
+    return UVISOR_SVC(uvisor_page_free, table);
 }
 
 uint32_t uvisor_get_page_size(void)

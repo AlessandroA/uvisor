@@ -24,7 +24,7 @@ void vIRQ_SetVector(uint32_t irqn, uint32_t vector)
         uvisor_disabled_set_vector(irqn, vector);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_ISR_SET, irqn, vector);
+        UVISOR_SVC(vIRQ_SetVector, irqn, vector);
     }
 }
 
@@ -34,7 +34,7 @@ uint32_t vIRQ_GetVector(uint32_t irqn)
         return uvisor_disabled_get_vector(irqn);
     }
     else {
-        return UVISOR_SVC(UVISOR_SVC_ID_ISR_GET, irqn);
+        return UVISOR_SVC(vIRQ_GetVector, irqn);
     }
 }
 
@@ -44,7 +44,7 @@ void vIRQ_EnableIRQ(uint32_t irqn)
         NVIC_EnableIRQ((IRQn_Type) irqn);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_ENABLE, irqn);
+        UVISOR_SVC(vIRQ_EnableIRQ, irqn);
     }
 }
 
@@ -54,7 +54,7 @@ void vIRQ_DisableIRQ(uint32_t irqn)
         NVIC_DisableIRQ((IRQn_Type) irqn);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_DISABLE, irqn);
+        UVISOR_SVC(vIRQ_DisableIRQ, irqn);
     }
 }
 
@@ -67,7 +67,7 @@ void vIRQ_DisableAll(void)
         __disable_irq();
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_DISABLE_ALL);
+        UVISOR_SVC(vIRQ_DisableAll);
     }
 }
 
@@ -81,7 +81,7 @@ void vIRQ_EnableAll(void)
         __enable_irq();
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_ENABLE_ALL);
+        UVISOR_SVC(vIRQ_EnableAll);
     }
 }
 
@@ -91,7 +91,7 @@ void vIRQ_ClearPendingIRQ(uint32_t irqn)
         NVIC_ClearPendingIRQ((IRQn_Type) irqn);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_PEND_CLR, irqn);
+        UVISOR_SVC(vIRQ_ClearPendingIRQ, irqn);
     }
 }
 
@@ -101,7 +101,7 @@ void vIRQ_SetPendingIRQ(uint32_t irqn)
         NVIC_SetPendingIRQ((IRQn_Type) irqn);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_PEND_SET, irqn);
+        UVISOR_SVC(vIRQ_SetPendingIRQ, irqn);
     }
 }
 
@@ -111,7 +111,7 @@ uint32_t vIRQ_GetPendingIRQ(uint32_t irqn)
         return NVIC_GetPendingIRQ((IRQn_Type) irqn);
     }
     else {
-        return UVISOR_SVC(UVISOR_SVC_ID_IRQ_PEND_GET, irqn);
+        return UVISOR_SVC(vIRQ_GetPendingIRQ, irqn);
     }
 }
 
@@ -121,7 +121,7 @@ void vIRQ_SetPriority(uint32_t irqn, uint32_t priority)
         NVIC_SetPriority((IRQn_Type) irqn, priority);
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_IRQ_PRIO_SET, irqn, priority);
+        UVISOR_SVC(vIRQ_SetPriority, irqn, priority);
     }
 }
 
@@ -131,7 +131,7 @@ uint32_t vIRQ_GetPriority(uint32_t irqn)
         return NVIC_GetPriority((IRQn_Type) irqn);
     }
     else {
-        return UVISOR_SVC(UVISOR_SVC_ID_IRQ_PRIO_GET, irqn);
+        return UVISOR_SVC(vIRQ_GetPriority, irqn);
     }
 }
 
@@ -162,7 +162,7 @@ int vIRQ_GetLevel(void)
         }
     }
     else {
-        return UVISOR_SVC(UVISOR_SVC_ID_IRQ_LEVEL_GET);
+        return UVISOR_SVC(vIRQ_GetLevel);
     }
 }
 
@@ -172,6 +172,6 @@ void vIRQ_SystemReset(TResetReason reason)
         NVIC_SystemReset();
     }
     else {
-        UVISOR_SVC(UVISOR_SVC_ID_DEBUG_REBOOT, reason);
+        UVISOR_SVC(debug_die, reason);
     }
 }

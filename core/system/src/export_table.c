@@ -613,7 +613,7 @@ static void boxes_init(void)
 
     /* This must be called from unprivileged mode in order for the recursive
      * gateway chaining to work properly. */
-    UVISOR_SVC(UVISOR_SVC_ID_BOX_INIT_FIRST);
+    UVISOR_SVC(boxes_init);
 }
 
 /* This table must be located at the end of the uVisor binary so that this

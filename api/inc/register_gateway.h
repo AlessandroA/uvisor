@@ -74,7 +74,7 @@
     ({ \
         /* Instanstiate the gateway. This gets resolved at link-time. */ \
         UVISOR_ALIGN(4) static TRegisterGateway const register_gateway = { \
-            .svc_opcode = UVISOR_SVC_OPCODE(UVISOR_SVC_ID_REGISTER_GATEWAY), \
+            .svc_opcode = UVISOR_SVC_OPCODE(UVISOR_SVC_REGISTER_GATEWAY), \
             .branch     = BRANCH_OPCODE(__UVISOR_OFFSETOF(TRegisterGateway, branch), \
                                         __UVISOR_OFFSETOF(TRegisterGateway, bxlr)), \
             .magic      = UVISOR_REGISTER_GATEWAY_MAGIC, \
@@ -120,7 +120,7 @@
     { \
         /* Instanstiate the gateway. This gets resolved at link-time. */ \
         UVISOR_ALIGN(4) static TRegisterGateway const register_gateway = { \
-            .svc_opcode = UVISOR_SVC_OPCODE(UVISOR_SVC_ID_REGISTER_GATEWAY), \
+            .svc_opcode = UVISOR_SVC_OPCODE(UVISOR_SVC_REGISTER_GATEWAY), \
             .branch     = BRANCH_OPCODE(__UVISOR_OFFSETOF(TRegisterGateway, branch), \
                                         __UVISOR_OFFSETOF(TRegisterGateway, bxlr)), \
             .magic      = UVISOR_REGISTER_GATEWAY_MAGIC, \
