@@ -108,7 +108,6 @@ endif
 
 # Core source files
 SOURCES:=\
-         $(CORE_SYSTEM_DIR)/src/benchmark.c \
          $(CORE_SYSTEM_DIR)/src/box_init.c \
          $(CORE_SYSTEM_DIR)/src/context.c \
          $(CORE_SYSTEM_DIR)/src/export_table.c \
