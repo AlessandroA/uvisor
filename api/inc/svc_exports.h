@@ -134,7 +134,9 @@
 
 #elif defined(__GNUC__)
 
-#define UVISOR_SVC(id, metadata, ...) \
+#define UVISOR_SVC(id, ...) UVISOR_SVC_METADATA(id, "", ##__VA_ARGS__)
+
+#define UVISOR_SVC_METADATA(id, metadata, ...) \
     ({ \
         UVISOR_MACRO_REGS_ARGS(uint32_t, ##__VA_ARGS__); \
         UVISOR_MACRO_REGS_RETVAL(uint32_t, res); \

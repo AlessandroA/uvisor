@@ -20,5 +20,5 @@
 
 UVISOR_EXTERN void uvisor_debug_init(const TUvisorDebugDriver * const driver)
 {
-    UVISOR_SVC(UVISOR_SVC_ID_DEBUG_REGISTER_BOX, "", (uint32_t) driver);
+    UVISOR_SVC(UVISOR_SVC_ID_DEBUG_REGISTER_BOX, (uint32_t) driver);
 }

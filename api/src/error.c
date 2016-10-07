@@ -19,5 +19,5 @@
 
 void uvisor_error(THaltUserError reason)
 {
-    UVISOR_SVC(UVISOR_SVC_ID_HALT_USER_ERR, "", reason);
+    UVISOR_SVC(UVISOR_SVC_ID_HALT_USER_ERR, reason);
 }

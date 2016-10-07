@@ -46,7 +46,7 @@ static uint32_t g_box_init_box0_sp;
  */
 static void UVISOR_NAKED box_init_thunk(void)
 {
-    UVISOR_SVC(UVISOR_SVC_ID_BOX_INIT_NEXT, "");
+    UVISOR_SVC(UVISOR_SVC_ID_BOX_INIT_NEXT);
 }
 
 /** Start the recursion for the box initialization routine.
