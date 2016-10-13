@@ -36,6 +36,7 @@ extern void HardFault_IRQn_Handler(void);
 extern void MemoryManagement_IRQn_Handler(void);
 extern void BusFault_IRQn_Handler(void);
 extern void UsageFault_IRQn_Handler(void);
+extern void SecureFault_IRQn_Handler(void);
 extern void SVCall_IRQn_Handler(void);
 extern void DebugMonitor_IRQn_Handler(void);
 extern void PendSV_IRQn_Handler(void);
