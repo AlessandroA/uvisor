@@ -54,67 +54,67 @@ UVISOR_EXTERN void uvisor_error(THaltUserError reason)
  * Interrupts
  ******************************************************************************/
 
-void vIRQ_SetVector(uint32_t irqn, uint32_t vector)
+UVISOR_EXTERN void vIRQ_SetVector(uint32_t irqn, uint32_t vector)
 {
     UVISOR_ENTRY_POINT(vIRQ_SetVector, irqn, vector);
 }
 
-uint32_t vIRQ_GetVector(uint32_t irqn)
+UVISOR_EXTERN uint32_t vIRQ_GetVector(uint32_t irqn)
 {
     return UVISOR_ENTRY_POINT(vIRQ_GetVector, irqn);
 }
 
-void vIRQ_EnableIRQ(uint32_t irqn)
+UVISOR_EXTERN void vIRQ_EnableIRQ(uint32_t irqn)
 {
     UVISOR_ENTRY_POINT(vIRQ_EnableIRQ, irqn);
 }
 
-void vIRQ_DisableIRQ(uint32_t irqn)
+UVISOR_EXTERN void vIRQ_DisableIRQ(uint32_t irqn)
 {
     UVISOR_ENTRY_POINT(vIRQ_DisableIRQ, irqn);
 }
 
-void vIRQ_DisableAll(void)
+UVISOR_EXTERN void vIRQ_DisableAll(void)
 {
     UVISOR_ENTRY_POINT(vIRQ_DisableAll);
 }
 
-void vIRQ_EnableAll(void)
+UVISOR_EXTERN void vIRQ_EnableAll(void)
 {
     UVISOR_ENTRY_POINT(vIRQ_EnableAll);
 }
 
-void vIRQ_ClearPendingIRQ(uint32_t irqn)
+UVISOR_EXTERN void vIRQ_ClearPendingIRQ(uint32_t irqn)
 {
     UVISOR_ENTRY_POINT(vIRQ_ClearPendingIRQ, irqn);
 }
 
-void vIRQ_SetPendingIRQ(uint32_t irqn)
+UVISOR_EXTERN void vIRQ_SetPendingIRQ(uint32_t irqn)
 {
     UVISOR_ENTRY_POINT(vIRQ_SetPendingIRQ, irqn);
 }
 
-uint32_t vIRQ_GetPendingIRQ(uint32_t irqn)
+UVISOR_EXTERN uint32_t vIRQ_GetPendingIRQ(uint32_t irqn)
 {
     return UVISOR_ENTRY_POINT(vIRQ_GetPendingIRQ, irqn);
 }
 
-void vIRQ_SetPriority(uint32_t irqn, uint32_t priority)
+UVISOR_EXTERN void vIRQ_SetPriority(uint32_t irqn, uint32_t priority)
 {
     UVISOR_ENTRY_POINT(vIRQ_SetPriority, irqn, priority);
 }
 
-uint32_t vIRQ_GetPriority(uint32_t irqn)
+UVISOR_EXTERN uint32_t vIRQ_GetPriority(uint32_t irqn)
 {
     return UVISOR_ENTRY_POINT(vIRQ_GetPriority, irqn);
 }
 
-int vIRQ_GetLevel(void)
+UVISOR_EXTERN int vIRQ_GetLevel(void)
 {
     return UVISOR_ENTRY_POINT(vIRQ_GetLevel);
 }
 
-void vIRQ_SystemReset(TResetReason reason)
+UVISOR_EXTERN void vIRQ_SystemReset(TResetReason reason)
 {
     UVISOR_ENTRY_POINT(debug_die, reason);
 }
@@ -124,12 +124,12 @@ void vIRQ_SystemReset(TResetReason reason)
  * Page allocator
  ******************************************************************************/
 
-int uvisor_page_malloc(UvisorPageTable * const table)
+UVISOR_EXTERN int uvisor_page_malloc(UvisorPageTable * const table)
 {
     return UVISOR_ENTRY_POINT(uvisor_page_malloc, table);
 }
 
-int uvisor_page_free(const UvisorPageTable * const table)
+UVISOR_EXTERN int uvisor_page_free(const UvisorPageTable * const table)
 {
     return UVISOR_ENTRY_POINT(uvisor_page_free, table);
 }
