@@ -126,6 +126,8 @@ UVISOR_NOINLINE void uvisor_init_post(void)
 
 void main_entry(void)
 {
+    void const * const caller = __builtin_return_address(0);
+
     /* Return immediately if the magic is invalid or uVisor is disabled.
      * This ensures that no uVisor feature that could halt the system is
      * active in disabled mode (for example, printing debug messages to the
@@ -142,12 +144,24 @@ void main_entry(void)
         /* Disable all IRQs to perform atomic pointers swaps. */
         __disable_irq();
 
-        /* Swap the vector tables. */
+#if defined(ARCH_MPU_ARMv8M)
+        /* Set the S and NS vector tables. */
+        SCB_NS->VTOR = SCB->VTOR;
+        SCB->VTOR = (uint32_t) &g_isr_vector;
+
+        /* Swap the stack pointers. */
+        __TZ_set_MSP_NS(__get_MSP());
+        __TZ_set_PSP_NS(0); /* TODO */
+        __set_MSP((uint32_t) &__stack_top__);
+        __set_PSP(0);
+#else /* defined(ARCH_MPU_ARMv8M) */
+        /* Set the vector table. */
         SCB->VTOR = (uint32_t) &g_isr_vector;
 
         /* Swap the stack pointers. */
         __set_PSP(__get_MSP());
         __set_MSP((uint32_t) &__stack_top__);
+#endif /* defined(ARCH_MPU_ARMv8M) */
 
         /* Re-enable all IRQs. */
         __enable_irq();
@@ -155,10 +169,24 @@ void main_entry(void)
         /* Finish the uVisor initialization */
         uvisor_init_post();
 
-        /* Switch to unprivileged mode.
-         * This is possible as the uVisor code is readable in unprivileged mode. */
+        /* Switch to unprivileged mode. */
         __set_CONTROL(__get_CONTROL() | 3);
-        __ISB();
-        __DSB();
+
+#if defined(ARCH_MPU_ARMv8M)
+        /* Branch to the caller. This switches to NS mode, and is executed in
+         * unprivileged mode. */
+        caller = caller & ~(0x1UL);
+        asm volatile(
+            "bxns %[caller]\n"
+            :: [caller] "r" (caller)
+        );
+#else /* defined(ARCH_MPU_ARMv8M) */
+        /* Branch to the caller. This will be executed in unprivileged mode. */
+        caller = caller |= 1;
+        asm volatile(
+            "bx  %[caller]\n"
+            :: [caller] "r" (caller)
+        );
+#endif /* defined(ARCH_MPU_ARMv8M) */
     }
 }

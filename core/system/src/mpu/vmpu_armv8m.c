@@ -17,6 +17,7 @@
 #include <uvisor.h>
 #include "context.h"
 #include "halt.h"
+#include "linker.h"
 #include "unvic.h"
 
 /* This key needs to be written to AIRCR at every write access. */
@@ -24,6 +25,21 @@
 
 static void vmpu_arch_init_sau(void)
 {
+    /* Disable the SAU and configure all code to run in S mode. */
+    SAU->CTRL = 0;
+
+    /* Configure the public SRAM to be accessible in NS mode. */
+    SAU->RNR = 0;
+    SAU->RBAR = ((uint32_t) __uvisor_config.bss_end) & 0xFFFFFFE0;
+    SAU->RLAR = (((uint32_t) __uvisor_config.sram_end) & 0xFFFFFFE0) | SAU_RLAR_ENABLE_Msk;
+
+    /* Configure the whole flash to be accessible in NS mode. */
+    SAU->RNR = 1;
+    SAU->RBAR = ((uint32_t) __uvisor_config.flash_start) & 0xFFFFFFE0;
+    SAU->RLAR = (((uint32_t) __uvisor_config.flash_end) & 0xFFFFFFE0) | SAU_RLAR_ENABLE_Msk;
+
+    /* Enable the SAU. */
+    SAU->CTRL |= SAU_CTRL_ENABLE_Msk;
 }
 
 uint32_t vmpu_fault_find_acl(uint32_t fault_addr, uint32_t size)
@@ -39,7 +55,7 @@ void vmpu_sys_mux_handler(uint32_t lr, uint32_t msp)
         HALT_ERROR(NOT_ALLOWED, "An user IRQ (%d) is being served by the system ISR.\r\n", irqn);
     }
 
-    /* Beuhave differently depending on the fault. */
+    /* Behave differently depending on the fault. */
     switch (irqn) {
     case HardFault_IRQn:
         HALT_ERROR(FAULT_HARD, "Hard fault.\r\n");

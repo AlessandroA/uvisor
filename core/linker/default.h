@@ -97,6 +97,15 @@ SECTIONS
         __data_end__ = .;
     } > RAM AT>FLASH
 
+    .entry_points :
+    {
+        . = ALIGN(32);
+        __entry_points_start__ = .;
+        KEEP(*(.entry_points))
+        . = ALIGN(32);
+        __entry_points_end__ = .;
+    }
+
     .export_table :
     {
         /* The __uvisor_export_table must be placed at the very end of the

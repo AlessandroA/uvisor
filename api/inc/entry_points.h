@@ -76,4 +76,14 @@ static UVISOR_FORCEINLINE uint32_t __get_control(void)
         result; \
     })
 
+#define UVISOR_ENTRY_POINT_NS_NP(return_type, function_name, ...) \
+    return_type function_name(__VA_ARGS__) { \
+        if (CALLING_FROM_NS()) { \
+            if (CALLING_FROM_NP()) { \
+                function_name(__UVISOR_ENTRY_POINT_FUNCTION_ARGS(__VA_ARGS__)); \
+            } \
+    } \
+    UVISOR_EXTERN uint32_t __attribute__((section(".entry_points"))) function
+
+
 #endif /* __UVISOR_API_ENTRY_POINTS_H__ */
