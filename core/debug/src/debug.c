@@ -158,7 +158,7 @@ void debug_fault(THaltError reason, uint32_t lr, uint32_t sp)
 
 static void debug_die(void)
 {
-    UVISOR_SVC(debug_die, DEBUG_BOX_HALT);
+    UVISOR_SVC(vIRQ_SystemReset, DEBUG_BOX_HALT);
 }
 
 void debug_reboot(TResetReason reason)

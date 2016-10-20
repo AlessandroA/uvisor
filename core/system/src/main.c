@@ -126,7 +126,7 @@ UVISOR_NOINLINE void uvisor_init_post(void)
 
 void main_entry(void)
 {
-    void const * const caller = __builtin_return_address(0);
+    uint32_t caller = (uint32_t) __builtin_return_address(0);
 
     /* Return immediately if the magic is invalid or uVisor is disabled.
      * This ensures that no uVisor feature that could halt the system is
@@ -182,7 +182,7 @@ void main_entry(void)
         );
 #else /* defined(ARCH_MPU_ARMv8M) */
         /* Branch to the caller. This will be executed in unprivileged mode. */
-        caller = caller |= 1;
+        caller |= 1;
         asm volatile(
             "bx  %[caller]\n"
             :: [caller] "r" (caller)

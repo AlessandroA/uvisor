@@ -23,113 +23,37 @@
 /*******************************************************************************
  * Box identity
  ******************************************************************************/
-
-UVISOR_EXTERN int uvisor_box_namespace(int box_id, char *box_namespace, size_t length)
-{
-    return UVISOR_ENTRY_POINT(uvisor_box_namespace, box_id, box_namespace, length);
-}
-
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(int, uvisor_box_namespace, int, char *, size_t);
 
 /*******************************************************************************
  * Debug
  ******************************************************************************/
-
-UVISOR_EXTERN void uvisor_debug_init(const TUvisorDebugDriver * const driver)
-{
-    UVISOR_ENTRY_POINT(uvisor_debug_init, driver);
-}
-
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void, uvisor_debug_init, const TUvisorDebugDriver * const);
 
 /*******************************************************************************
  * Error
  ******************************************************************************/
-
-UVISOR_EXTERN void uvisor_error(THaltUserError reason)
-{
-    UVISOR_ENTRY_POINT(uvisor_error, reason);
-}
-
+UVISOR_ENTRY_POINT_FROM_ANY_PRIVILEGE(void, uvisor_error, THaltUserError);
 
 /*******************************************************************************
  * Interrupts
  ******************************************************************************/
-
-UVISOR_EXTERN void vIRQ_SetVector(uint32_t irqn, uint32_t vector)
-{
-    UVISOR_ENTRY_POINT(vIRQ_SetVector, irqn, vector);
-}
-
-UVISOR_EXTERN uint32_t vIRQ_GetVector(uint32_t irqn)
-{
-    return UVISOR_ENTRY_POINT(vIRQ_GetVector, irqn);
-}
-
-UVISOR_EXTERN void vIRQ_EnableIRQ(uint32_t irqn)
-{
-    UVISOR_ENTRY_POINT(vIRQ_EnableIRQ, irqn);
-}
-
-UVISOR_EXTERN void vIRQ_DisableIRQ(uint32_t irqn)
-{
-    UVISOR_ENTRY_POINT(vIRQ_DisableIRQ, irqn);
-}
-
-UVISOR_EXTERN void vIRQ_DisableAll(void)
-{
-    UVISOR_ENTRY_POINT(vIRQ_DisableAll);
-}
-
-UVISOR_EXTERN void vIRQ_EnableAll(void)
-{
-    UVISOR_ENTRY_POINT(vIRQ_EnableAll);
-}
-
-UVISOR_EXTERN void vIRQ_ClearPendingIRQ(uint32_t irqn)
-{
-    UVISOR_ENTRY_POINT(vIRQ_ClearPendingIRQ, irqn);
-}
-
-UVISOR_EXTERN void vIRQ_SetPendingIRQ(uint32_t irqn)
-{
-    UVISOR_ENTRY_POINT(vIRQ_SetPendingIRQ, irqn);
-}
-
-UVISOR_EXTERN uint32_t vIRQ_GetPendingIRQ(uint32_t irqn)
-{
-    return UVISOR_ENTRY_POINT(vIRQ_GetPendingIRQ, irqn);
-}
-
-UVISOR_EXTERN void vIRQ_SetPriority(uint32_t irqn, uint32_t priority)
-{
-    UVISOR_ENTRY_POINT(vIRQ_SetPriority, irqn, priority);
-}
-
-UVISOR_EXTERN uint32_t vIRQ_GetPriority(uint32_t irqn)
-{
-    return UVISOR_ENTRY_POINT(vIRQ_GetPriority, irqn);
-}
-
-UVISOR_EXTERN int vIRQ_GetLevel(void)
-{
-    return UVISOR_ENTRY_POINT(vIRQ_GetLevel);
-}
-
-UVISOR_EXTERN void vIRQ_SystemReset(TResetReason reason)
-{
-    UVISOR_ENTRY_POINT(debug_die, reason);
-}
-
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_SetVector,       uint32_t,     uint32_t);
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(uint32_t, vIRQ_GetVector,       uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_EnableIRQ,       uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_DisableIRQ,      uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_DisableAll                             );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_EnableAll,                             );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_ClearPendingIRQ, uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_SetPendingIRQ,   uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(uint32_t, vIRQ_GetPendingIRQ,   uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_SetPriority,     uint32_t,     uint32_t);
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(uint32_t, vIRQ_GetPriority,     uint32_t              );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(int,      vIRQ_GetLevel                               );
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(void,     vIRQ_SystemReset,     TResetReason          );
 
 /*******************************************************************************
  * Page allocator
  ******************************************************************************/
-
-UVISOR_EXTERN int uvisor_page_malloc(UvisorPageTable * const table)
-{
-    return UVISOR_ENTRY_POINT(uvisor_page_malloc, table);
-}
-
-UVISOR_EXTERN int uvisor_page_free(const UvisorPageTable * const table)
-{
-    return UVISOR_ENTRY_POINT(uvisor_page_free, table);
-}
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(int, uvisor_page_malloc, UvisorPageTable * const      )
+UVISOR_ENTRY_POINT_FROM_LOW_PRIVILEGE(int, uvisor_page_free,   const UvisorPageTable * const)

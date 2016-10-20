@@ -106,7 +106,7 @@
 #define UVISOR_SVC_box_id_self                       UVISOR_SVC_CUSTOM_TABLE(15)
 #define UVISOR_SVC_box_id_caller                     UVISOR_SVC_CUSTOM_TABLE(16)
 #define UVISOR_SVC_uvisor_box_namespace              UVISOR_SVC_CUSTOM_TABLE(17)
-#define UVISOR_SVC_debug_die                         UVISOR_SVC_CUSTOM_TABLE(18)
+#define UVISOR_SVC_vIRQ_SystemReset                  UVISOR_SVC_CUSTOM_TABLE(18)
 #define UVISOR_SVC_uvisor_debug_init                 UVISOR_SVC_CUSTOM_TABLE(19)
 #define UVISOR_SVC_vIRQ_DisableAll                   UVISOR_SVC_CUSTOM_TABLE(20)
 #define UVISOR_SVC_vIRQ_EnableAll                    UVISOR_SVC_CUSTOM_TABLE(21)
