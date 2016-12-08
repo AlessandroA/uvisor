@@ -439,7 +439,7 @@ void vmpu_arch_init_hw(void)
      *
      *     2^n     <-- region end
      *     ...
-     * .---------. <-- uvisor_config.sram_end
+     * .---------. <-- uvisor_config.public_sram_end
      * |  box 0  |
      * | public  |
      * | memory  |
@@ -449,9 +449,9 @@ void vmpu_arch_init_hw(void)
      * +---------+ <-- aligned to page size
      * | wastage | <-- wasted SRAM is less than 1 page size
      * +---------+ <-- uvisor_config.page_start
-     * |  uVisor |
-     * |   bss   |
-     * '---------' <-- uvisor_config.sram_start, region start
+     * |  uVisor |  \_ Note: This region is here only if uVisor shares the SRAM
+     * |   bss   |  /        with the OS/app.
+     * '---------' <-- uvisor_config.public_sram_start, region start
      *
      * Example: The region size of a 96kB SRAM will be 128kB, and the page heap
      *          end will have to be aligned to 16kB, _not_ 12kB (= 96kB / 8).
