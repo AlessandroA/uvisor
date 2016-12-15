@@ -451,6 +451,18 @@ uint32_t unvic_gateway_context_switch_in(uint32_t svc_sp, uint32_t svc_pc)
     uint32_t ipsr, irqn, xpsr;
     uint32_t unvic_thunk;
 
+    int i = 0;
+    extern TContextPreviousState g_context_previous_states[UVISOR_CONTEXT_MAX_DEPTH];
+    extern uint32_t g_context_p;
+    for (; i <= g_context_p; ++i) {
+        if (g_context_previous_states[i].type == CONTEXT_SWITCH_FUNCTION_ISR) {
+            if (g_active_box == g_context_previous_states[i].src_id) {
+                return 0;
+                HALT_ERROR(SANITY_CHECK_FAILED, "Nested IRQ");
+            }
+        }
+    }
+
     /* This handler is always executed from privileged code, so the SVCall stack
      * pointer is the MSP. */
     msp = svc_sp;
@@ -492,6 +504,9 @@ uint32_t unvic_gateway_context_switch_in(uint32_t svc_sp, uint32_t svc_pc)
 
     /* De-privilege execution. */
     __set_CONTROL(__get_CONTROL() | 3);
+
+    /* FIXME: This disables interrupt nesting. */
+    __set_BASEPRI(__UVISOR_NVIC_MIN_PRIORITY);
 
     /* Return whether the destination box requires privacy or not. */
     /* TODO: Context privacy is currently unsupported. */
@@ -558,6 +573,9 @@ void unvic_gateway_context_switch_out(uint32_t svc_sp, uint32_t msp)
 
     /* Re-privilege execution. */
     __set_CONTROL(__get_CONTROL() & ~2);
+
+    /* FIXME: Remove this when interrupt nesting is re-enabled. */
+    __set_BASEPRI(0);
 }
 
 void unvic_init(void)
