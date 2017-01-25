@@ -246,7 +246,7 @@ static void vmpu_box_index_init(uint8_t box_id, const UvisorBoxConfig * const co
     index->config = config;
 }
 
-static void vmpu_load_boxes(void)
+static void vmpu_enumerate_boxes(void)
 {
     int i, count;
     const UvisorBoxAclItem *region;
@@ -368,7 +368,7 @@ static void vmpu_load_boxes(void)
     vmpu_load_box(0);
     *(__uvisor_config.uvisor_box_context) = (uint32_t *) g_context_current_states[0].bss;
 
-    DPRINTF("vmpu_load_boxes [DONE]\n");
+    DPRINTF("vmpu_enumerate_boxes [DONE]\n");
 }
 
 int vmpu_fault_recovery_bus(uint32_t pc, uint32_t sp, uint32_t fault_addr, uint32_t fault_status)
@@ -516,7 +516,7 @@ void vmpu_init_post(void)
     vmpu_arch_init();
 
     /* load boxes */
-    vmpu_load_boxes();
+    vmpu_enumerate_boxes();
 }
 
 static int copy_box_namespace(const char *src, char *dst)
