@@ -209,11 +209,23 @@ static void vmpu_box_index_init(uint8_t box_id, const UvisorBoxConfig * const co
     uint32_t heap_size = config->heap_size;
     int i;
 
+    /* Box 0 still uses the public heap to be backwards compatible. */
     if (box_id == 0) {
-        /* Box 0 still uses the public heap to be backwards compatible. */
         const uint32_t heap_end = (uint32_t) __uvisor_config.heap_end;
         const uint32_t heap_start = (uint32_t) __uvisor_config.heap_start;
         heap_size = (heap_end - heap_start) - config->index_size;
+
+        /* Check heap start and end addresses. */
+        if (!heap_start || !vmpu_public_sram_addr(heap_start)) {
+            HALT_ERROR(SANITY_CHECK_FAILED, "Heap start pointer (0x%08x) is not in SRAM memory.\r\n", heap_start);
+        }
+        if (!heap_end || !vmpu_public_sram_addr(heap_end)) {
+            HALT_ERROR(SANITY_CHECK_FAILED, "Heap end pointer (0x%08x) is not in SRAM memory.\r\n", heap_end);
+        }
+        if (heap_end < heap_start) {
+            HALT_ERROR(SANITY_CHECK_FAILED, "Heap end pointer (0x%08x) is smaller than heap start pointer (0x%08x).\r\n",
+                       heap_end, heap_start);
+        }
     }
 
     box_bss = (uint8_t *) g_context_current_states[box_id].bss;
@@ -253,20 +265,6 @@ static void vmpu_enumerate_boxes(void)
     const UvisorBoxConfig **box_cfgtbl;
     uint32_t bss_size;
     uint8_t box_id;
-
-    /* Check heap start and end addresses. */
-    if (!__uvisor_config.heap_start || !vmpu_public_sram_addr((uint32_t) __uvisor_config.heap_start)) {
-        HALT_ERROR(SANITY_CHECK_FAILED, "Heap start pointer (0x%08x) is not in SRAM memory.\n",
-            (uint32_t) __uvisor_config.heap_start);
-    }
-    if (!__uvisor_config.heap_end || !vmpu_public_sram_addr((uint32_t) __uvisor_config.heap_end)) {
-        HALT_ERROR(SANITY_CHECK_FAILED, "Heap end pointer (0x%08x) is not in SRAM memory.\n",
-            (uint32_t) __uvisor_config.heap_end);
-    }
-    if (__uvisor_config.heap_end < __uvisor_config.heap_start) {
-        HALT_ERROR(SANITY_CHECK_FAILED, "Heap end pointer (0x%08x) is smaller than heap start pointer (0x%08x).\n",
-            (uint32_t) __uvisor_config.heap_end, (uint32_t) __uvisor_config.heap_start);
-    }
 
     /* Enumerate boxes. */
     g_vmpu_box_count = (uint32_t) (__uvisor_config.cfgtbl_ptr_end - __uvisor_config.cfgtbl_ptr_start);
