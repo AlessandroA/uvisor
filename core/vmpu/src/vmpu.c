@@ -260,12 +260,6 @@ static void vmpu_box_index_init(uint8_t box_id, const UvisorBoxConfig * const co
 
 static void vmpu_enumerate_boxes(void)
 {
-    int i, count;
-    const UvisorBoxAclItem *region;
-    const UvisorBoxConfig **box_cfgtbl;
-    uint32_t bss_size;
-    uint8_t box_id;
-
     /* Enumerate boxes. */
     g_vmpu_box_count = (uint32_t) (__uvisor_config.cfgtbl_ptr_end - __uvisor_config.cfgtbl_ptr_start);
     if (g_vmpu_box_count >= UVISOR_MAX_BOXES) {
@@ -274,7 +268,8 @@ static void vmpu_enumerate_boxes(void)
     g_vmpu_boxes_counted = TRUE;
 
     /* Initialize boxes. */
-    box_id = 0;
+    uint8_t box_id = 0;
+    const UvisorBoxConfig **box_cfgtbl;
     for (box_cfgtbl = (const UvisorBoxConfig * *) __uvisor_config.cfgtbl_ptr_start;
          box_cfgtbl < (const UvisorBoxConfig * *) __uvisor_config.cfgtbl_ptr_end;
          box_cfgtbl++) {
@@ -310,7 +305,8 @@ static void vmpu_enumerate_boxes(void)
         DPRINTF("box[%i] ACL list:\n", box_id);
 
         /* Add ACL's for all box stacks. */
-        bss_size = (*box_cfgtbl)->index_size + (*box_cfgtbl)->heap_size;
+        uint32_t bss_size = (*box_cfgtbl)->index_size + (*box_cfgtbl)->heap_size;
+        int i = 0;
         for (i = 0; i < UVISOR_BOX_INDEX_SIZE_COUNT; i++) {
             bss_size += (*box_cfgtbl)->bss_size[i];
         }
@@ -330,9 +326,9 @@ static void vmpu_enumerate_boxes(void)
         );
 
         /* Enumerate the box ACLs. */
-        region = (*box_cfgtbl)->acl_list;
+        const UvisorBoxAclItem *region = (*box_cfgtbl)->acl_list;
         if (region != NULL) {
-            count = (*box_cfgtbl)->acl_count;
+            int count = (*box_cfgtbl)->acl_count;
             for (i = 0; i < count; i++) {
                 /* Ensure that the ACL resides in public flash. */
                 if (!vmpu_public_flash_addr((uint32_t) region)) {
@@ -513,7 +509,7 @@ void vmpu_init_post(void)
     /* init memory protection */
     vmpu_arch_init();
 
-    /* load boxes */
+    /* Enumerate all boxes. */
     vmpu_enumerate_boxes();
 }
 
