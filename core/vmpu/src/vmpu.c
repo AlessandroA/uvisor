@@ -198,14 +198,14 @@ static void vmpu_box_index_init(uint8_t box_id, const UvisorBoxConfig * const co
 {
     uint8_t * box_bss;
     UvisorBoxIndex * index;
-    uint32_t heap_size = config->heap_size;
+    uint32_t heap_size = config->bss.size_of.heap;
     int i;
 
     /* Box 0 still uses the public heap to be backwards compatible. */
     if (box_id == 0) {
         const uint32_t heap_end = (uint32_t) __uvisor_config.heap_end;
         const uint32_t heap_start = (uint32_t) __uvisor_config.heap_start;
-        heap_size = (heap_end - heap_start) - config->index_size;
+        heap_size = (heap_end - heap_start) - config->bss.size_of.index;
 
         /* Check heap start and end addresses. */
         if (!heap_start || !vmpu_public_sram_addr(heap_start)) {
@@ -227,14 +227,14 @@ static void vmpu_box_index_init(uint8_t box_id, const UvisorBoxConfig * const co
     /* Zero the _entire_ index, so that user data inside the box index is in a
      * known state! This allows checking variables for `NULL`, or `0`, which
      * indicates an initialization requirement. */
-    memset(index, 0, config->index_size);
-    box_bss += config->index_size;
+    memset(index, 0, config->bss.size_of.index);
+    box_bss += config->bss.size_of.index;
 
-    for (i = 0; i < UVISOR_BOX_INDEX_SIZE_COUNT; i++) {
-        index->bss_ptr[i] = (void *) (config->bss_size[i] ? box_bss : NULL);
-        box_bss += config->bss_size[i];
+    for (i = 0; i < UVISOR_BSS_SECTIONS_COUNT; i++) {
+        index->bss.pointers[i] = (void *) (config->bss.sizes[i] ? box_bss : NULL);
+        box_bss += config->bss.sizes[i];
         if (box_id == 0) {
-            heap_size -= config->bss_size[i];
+            heap_size -= config->bss.sizes[i];
         }
     }
 
@@ -285,9 +285,9 @@ static void vmpu_enumerate_boxes(void)
         }
 
         /* Confirm the minimal size of the box index size. */
-        if ((*box_cfgtbl)->index_size < sizeof(UvisorBoxIndex)) {
+        if ((*box_cfgtbl)->bss.size_of.index < sizeof(UvisorBoxIndex)) {
             HALT_ERROR(SANITY_CHECK_FAILED, "Box index size (%uB) must be large enough to hold UvisorBoxIndex (%uB).\n",
-                (*box_cfgtbl)->index_size, sizeof(UvisorBoxIndex));
+                (*box_cfgtbl)->bss.size_of.index, sizeof(UvisorBoxIndex));
         }
 
         /* Check that the box namespace is not too long. */
@@ -297,10 +297,10 @@ static void vmpu_enumerate_boxes(void)
         DPRINTF("box[%i] ACL list:\n", box_id);
 
         /* Add ACL's for all box stacks. */
-        uint32_t bss_size = (*box_cfgtbl)->index_size + (*box_cfgtbl)->heap_size;
+        uint32_t bss_size = (*box_cfgtbl)->bss.size_of.index + (*box_cfgtbl)->bss.size_of.heap;
         int i = 0;
-        for (i = 0; i < UVISOR_BOX_INDEX_SIZE_COUNT; i++) {
-            bss_size += (*box_cfgtbl)->bss_size[i];
+        for (i = 0; i < UVISOR_BSS_SECTIONS_COUNT; i++) {
+            bss_size += (*box_cfgtbl)->bss.sizes[i];
         }
         vmpu_acl_stack(
             box_id,
